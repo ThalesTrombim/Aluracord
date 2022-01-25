@@ -1,5 +1,7 @@
 import { Box, Button, Text, TextField, Image } from '@skynexui/components';
+import { useState } from 'react';
 import appConfig from '../config.json';
+import Router from 'next/router';
 
 function GlobalStyle() {
   return (
@@ -47,7 +49,7 @@ function Titulo(props) {
 }
 
 export default function PaginaInicial() {
-  const username = 'ThalesTrombim';
+  const [ username, setUsername ] = useState('ThalesTrombim');
 
   return (
     <>
@@ -55,8 +57,8 @@ export default function PaginaInicial() {
       <Box
         styleSheet={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          backgroundColor: appConfig.theme.colors.primary[500],
-          backgroundImage: 'url(https://virtualbackgrounds.site/wp-content/uploads/2020/08/the-matrix-digital-rain.jpg)',
+          // backgroundColor: appConfig.theme.colors.primary[500],
+          backgroundImage: 'url(https://images.alphacoders.com/107/thumb-1920-107763.jpg)',
           backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundBlendMode: 'multiply',
         }}
       >
@@ -78,6 +80,10 @@ export default function PaginaInicial() {
           {/* Formulário */}
           <Box
             as="form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              Router.push('/chat')
+            }}
             styleSheet={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               width: { xs: '100%', sm: '50%' }, textAlign: 'center', marginBottom: '32px',
@@ -98,7 +104,14 @@ export default function PaginaInicial() {
                   backgroundColor: appConfig.theme.colors.neutrals[800],
                 },
               }}
+              value={username}
+              onChange={(e) => {
+                setUsername(e.target.value)
+              }}
+              
             />
+
+
             <Button
               type='submit'
               label='Entrar'

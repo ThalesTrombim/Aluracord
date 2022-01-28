@@ -24,7 +24,6 @@ export default function PaginaInicial() {
 
   return (
     <>
-      <GlobalStyle />
       <Box
         styleSheet={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',

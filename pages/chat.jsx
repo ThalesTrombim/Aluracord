@@ -1,6 +1,6 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import { createClient } from '@supabase/supabase-js';
-import React from 'react';
+import React, { useEffect } from 'react';
 import appConfig from '../config.json';
 
 const ANONKEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMyMjIzNywiZXhwIjoxOTU4ODk4MjM3fQ.OJCJrMvMUbzvshjP052L7Mk5Nd59FzQRs-u8SrZOxbo";
@@ -8,40 +8,31 @@ const BACKURL = "https://zyoekypskvqeoqqskslq.supabase.co"
 
 const supabaseClient = createClient(BACKURL, ANONKEY)
 
-const supabaseData = supabaseClient.from('message').select('*')
-
-
-console.log(supabaseData);
-
 export default function ChatPage() {
     const [mensagem, setMensagem] = React.useState('');
     const [listaDeMensagens, setListaDeMensagens] = React.useState([]);
 
+    useEffect(() => {
+        supabaseClient.from('message').select('*').order('id', { ascending: false}).then(({ data }) => {
+            setListaDeMensagens(data)
+        })
+    }, [])
 
-
-    /*
-    // Usuário
-    - Usuário digita no campo textarea
-    - Aperta enter para enviar
-    - Tem que adicionar o texto na listagem
-    
-    // Dev
-    - [X] Campo criado
-    - [X] Vamos usar o onChange usa o useState (ter if pra caso seja enter pra limpar a variavel)
-    - [X] Lista de mensagens 
-    */
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
-            id: listaDeMensagens.length + 1,
-            de: 'vanessametonini',
-            texto: novaMensagem,
+            // id: listaDeMensagens.length + 1,
+            from: 'vanessametonini',
+            message: novaMensagem,
         };
+        
+        supabaseClient.from('message').insert([ mensagem ]).then(({ data }) => {
+            setListaDeMensagens([
+                data[0],
+                ...listaDeMensagens
+            ])
+        })
 
-        setListaDeMensagens([
-            mensagem,
-            ...listaDeMensagens,
-        ]);
-        setMensagem('');
+        setMensagem('')
     }
 
     return (
@@ -147,7 +138,7 @@ function Header() {
 }
 
 function MessageList(props) {
-    console.log(props);
+    // console.log(props);
     return (
         <Box
             tag="ul"
@@ -190,7 +181,7 @@ function MessageList(props) {
                                 src={`https://github.com/vanessametonini.png`}
                             />
                             <Text tag="strong">
-                                {mensagem.de}
+                                {mensagem.from}
                             </Text>
                             <Text
                                 styleSheet={{
@@ -203,7 +194,7 @@ function MessageList(props) {
                                 {(new Date().toLocaleDateString())}
                             </Text>
                         </Box>
-                        {mensagem.texto}
+                        {mensagem.message}
                     </Text>
                 );
             })}

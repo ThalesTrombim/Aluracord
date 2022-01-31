@@ -1,35 +1,52 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import { createClient } from '@supabase/supabase-js';
+import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import appConfig from '../config.json';
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker';
 
 const ANONKEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMyMjIzNywiZXhwIjoxOTU4ODk4MjM3fQ.OJCJrMvMUbzvshjP052L7Mk5Nd59FzQRs-u8SrZOxbo";
 const BACKURL = "https://zyoekypskvqeoqqskslq.supabase.co"
 
 const supabaseClient = createClient(BACKURL, ANONKEY)
 
+function getMessagesSupabaseRealTime(addNewMessage) {
+    return supabaseClient.from('message').on('INSERT', (message) => {
+        addNewMessage(message.new)
+        console.log('nova mensagem')
+    }).subscribe();
+}
+
 export default function ChatPage() {
     const [mensagem, setMensagem] = React.useState('');
     const [listaDeMensagens, setListaDeMensagens] = React.useState([]);
+    const user = useRouter().query.username;
 
+    console.log(user)
     useEffect(() => {
         supabaseClient.from('message').select('*').order('id', { ascending: false}).then(({ data }) => {
             setListaDeMensagens(data)
         })
+
+        getMessagesSupabaseRealTime((newMessage) => {
+            setListaDeMensagens((listaDeMensagens) => {
+                return [
+                    newMessage,
+                    ...listaDeMensagens
+                ] 
+            })
+        });
     }, [])
 
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
             // id: listaDeMensagens.length + 1,
-            from: 'vanessametonini',
+            from: user,
             message: novaMensagem,
         };
         
         supabaseClient.from('message').insert([ mensagem ]).then(({ data }) => {
-            setListaDeMensagens([
-                data[0],
-                ...listaDeMensagens
-            ])
+            
         })
 
         setMensagem('')
@@ -112,6 +129,10 @@ export default function ChatPage() {
                                 color: appConfig.theme.colors.neutrals[200],
                             }}
                         />
+                        <ButtonSendSticker onStickerClick={( sticker ) => {
+                            console.log(sticker)
+                            handleNovaMensagem(`:sticker:${sticker}`)
+                        }} />
                     </Box>
                 </Box>
             </Box>
@@ -138,12 +159,11 @@ function Header() {
 }
 
 function MessageList(props) {
-    // console.log(props);
     return (
         <Box
             tag="ul"
             styleSheet={{
-                overflow: 'scroll',
+                overflow: 'auto',
                 display: 'flex',
                 flexDirection: 'column-reverse',
                 flex: 1,
@@ -194,10 +214,18 @@ function MessageList(props) {
                                 {(new Date().toLocaleDateString())}
                             </Text>
                         </Box>
-                        {mensagem.message}
+                        {mensagem.message.startsWith(':sticker') ?
+                            (
+                                <Image src={mensagem.message.replace(':sticker:', '')} />
+                            ) :
+                            (
+                                mensagem.message
+                            )
+                        }
                     </Text>
                 );
             })}
+
         </Box>
     )
 }

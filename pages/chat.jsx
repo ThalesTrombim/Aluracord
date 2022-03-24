@@ -5,7 +5,7 @@ import React, { useEffect } from 'react';
 import appConfig from '../config.json';
 import { ButtonSendSticker } from '../src/components/ButtonSendSticker';
 
-const ANONKEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMyMjIzNywiZXhwIjoxOTU4ODk4MjM3fQ.OJCJrMvMUbzvshjP052L7Mk5Nd59FzQRs-u8SrZOxbo";
+const ANONKEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMyMjIzNywiZXhwIjoxOTU4ODk4MjM3fQ.OJCJrMvMUbzvshjP052L7Mk5Nd59FzQRs-u8SrZOxbo"
 const BACKURL = "https://zyoekypskvqeoqqskslq.supabase.co"
 
 const supabaseClient = createClient(BACKURL, ANONKEY)
@@ -13,7 +13,6 @@ const supabaseClient = createClient(BACKURL, ANONKEY)
 function getMessagesSupabaseRealTime(addNewMessage) {
     return supabaseClient.from('message').on('INSERT', (message) => {
         addNewMessage(message.new)
-        console.log('nova mensagem')
     }).subscribe();
 }
 
@@ -25,6 +24,7 @@ export default function ChatPage() {
     console.log(user)
     useEffect(() => {
         supabaseClient.from('message').select('*').order('id', { ascending: false}).then(({ data }) => {
+            console.log(data)
             setListaDeMensagens(data)
         })
 
@@ -40,7 +40,6 @@ export default function ChatPage() {
 
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
-            // id: listaDeMensagens.length + 1,
             from: user,
             message: novaMensagem,
         };
@@ -90,13 +89,6 @@ export default function ChatPage() {
                     }}
                 >
                     <MessageList mensagens={listaDeMensagens} />
-                    {/* {listaDeMensagens.map((mensagemAtual) => {
-                        return (
-                            <li key={mensagemAtual.id}>
-                                {mensagemAtual.de}: {mensagemAtual.texto}
-                            </li>
-                        )
-                    })} */}
                     <Box
                         as="form"
                         styleSheet={{
@@ -130,7 +122,6 @@ export default function ChatPage() {
                             }}
                         />
                         <ButtonSendSticker onStickerClick={( sticker ) => {
-                            console.log(sticker)
                             handleNovaMensagem(`:sticker:${sticker}`)
                         }} />
                     </Box>
@@ -159,6 +150,8 @@ function Header() {
 }
 
 function MessageList(props) {
+
+    console.log(props)
     return (
         <Box
             tag="ul"
@@ -198,7 +191,7 @@ function MessageList(props) {
                                     display: 'inline-block',
                                     marginRight: '8px',
                                 }}
-                                src={`https://github.com/ThalesTrombim.png`}
+                                src={`https://github.com/${mensagem.from}.png`}
                             />
                             <Text tag="strong">
                                 {mensagem.from}
@@ -211,7 +204,7 @@ function MessageList(props) {
                                 }}
                                 tag="span"
                             >
-                                {(new Date().toLocaleDateString())}
+                                {(new Date(mensagem.created_at).toLocaleDateString())}
                             </Text>
                         </Box>
                         {mensagem.message.startsWith(':sticker') ?

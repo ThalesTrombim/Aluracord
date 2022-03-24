@@ -75,6 +75,7 @@ export default function PaginaInicial() {
                 },
               }}
               value={username}
+              placeholder='Digite seu nome de usuário do GitHub'
               onChange={(e) => {
                 setUsername(e.target.value)
               }}

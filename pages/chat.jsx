@@ -21,10 +21,8 @@ export default function ChatPage() {
     const [listaDeMensagens, setListaDeMensagens] = React.useState([]);
     const user = useRouter().query.username;
 
-    console.log(user)
     useEffect(() => {
         supabaseClient.from('message').select('*').order('id', { ascending: false}).then(({ data }) => {
-            console.log(data)
             setListaDeMensagens(data)
         })
 
@@ -151,7 +149,6 @@ function Header() {
 
 function MessageList(props) {
 
-    console.log(props)
     return (
         <Box
             tag="ul"
